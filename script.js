@@ -1124,8 +1124,8 @@ function removerItem(mes, tipo, index) {
     const choice = confirm(confirmMessage + '\n\nClique OK para remover apenas este mês, ou Cancel para remover todos os meses futuros.');
 
     if (choice) {
-      // Remove apenas este mês
-      data[mes][tipo].splice(index, 1);
+      // Remove apenas este mês do ano atual
+      currentYearData[mes][tipo].splice(index, 1);
       toast('Item removido apenas deste mês');
     } else {
       // Remove todos os meses futuros
