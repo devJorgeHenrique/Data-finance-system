@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Contabilidade - 2025</title>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Sistema de Contabilidade - 2025</h1>
+  
+  <!-- Dynamic Island Navigation -->
+  <nav class="dynamic-island-nav" role="navigation" aria-label="Navegação principal">
+    <div class="island-container">
+      <!-- Search & Filters Container (Left) -->
+      <div class="search-filters-container">
+        <div class="search-wrapper">
+          <input 
+            type="text" 
+            id="buscaTexto" 
+            placeholder="Buscar lançamentos..." 
+            class="search-input"
+            aria-label="Buscar lançamentos"
+          >
+          <span class="search-icon">🔍</span>
+          
+          <!-- Filter Toggle Button -->
+          <button 
+            id="filterToggle" 
+            class="filter-toggle-btn"
+            aria-label="Mostrar filtros"
+            aria-expanded="false"
+            aria-haspopup="true"
+          >
+            <span class="filter-icon">⚙️</span>
+          </button>
+        </div>
+        
+        <!-- Filter Chips -->
+        <div class="filter-chips" id="filterChips">
+          <div class="chip category-chip" data-filter="categoria">
+            <span class="chip-label">Todas</span>
+            <button class="chip-remove" aria-label="Remover filtro de categoria">×</button>
+          </div>
+          <div class="chip status-chip" data-filter="status">
+            <span class="chip-label">Todos</span>
+            <button class="chip-remove" aria-label="Remover filtro de status">×</button>
+          </div>
+        </div>
+        
+        <!-- Filter Popover -->
+        <div class="filter-popover" id="filterPopover" role="dialog" aria-label="Filtros" aria-hidden="true">
+          <div class="popover-header">
+            <h4>Filtros</h4>
+            <button class="popover-close" aria-label="Fechar filtros">×</button>
+          </div>
+          <div class="popover-content">
+            <div class="filter-group">
+              <label for="filtroCategoria">Categoria:</label>
+              <select id="filtroCategoria" class="filter-select">
+                <option value="__todas__">Todas as categorias</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filtroStatus">Status:</label>
+              <select id="filtroStatus" class="filter-select">
+                <option value="__todos__">Todos os status</option>
+                <option value="pago">Pago</option>
+                <option value="pendente">Pendente</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Month/Year Navigation (Center) -->
+      <div class="month-year-navigation" role="group" aria-label="Navegação de mês e ano">
+        <button class="nav-btn prev-month" title="Mês anterior" aria-label="Mês anterior">
+          <span>←</span>
+        </button>
+        
+        <div class="month-year-display">
+          <button 
+            id="monthYearSelector" 
+            class="month-year-selector"
+            aria-label="Selecionar mês e ano"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+          >
+            <span class="month-name" id="monthName" aria-live="polite">Janeiro</span>
+            <span class="year-display" id="yearDisplay" aria-live="polite">2025</span>
+            <span class="selector-arrow">▼</span>
+          </button>
+        </div>
+        
+        <button class="nav-btn next-month" title="Próximo mês" aria-label="Próximo mês">
+          <span>→</span>
+        </button>
+      </div>
+      
+      <!-- Theme Toggle (Right) -->
+      <button 
+        id="themeToggle" 
+        class="theme-toggle" 
+        title="Alternar tema"
+        aria-label="Alternar entre tema claro e escuro"
+      >
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </nav>
+  
+
+
+
+
+  <div class="form-container">
+    <form id="entryForm">
+      <select id="tipo">
+        <option value="entradas">Entrada</option>
+        <option value="saidasFixas">Saída Fixa</option>
+        <option value="saidasVariaveis">Saída Variável</option>
+      </select>
+      <input type="date" id="dataLanc" />
+      <input type="date" id="vencimento" placeholder="Vencimento (opcional)" />
+      <select id="status">
+        <option value="pago">Pago</option>
+        <option value="pendente">Pendente</option>
+      </select>
+      <input type="text" id="desc" placeholder="Descrição" required />
+      <input type="number" id="valor" placeholder="Valor" min="0" step="0.01" required />
+      <input type="text" id="categoria" list="categorias" placeholder="Categoria (opcional)" />
+      <datalist id="categorias">
+        <option value="Alimentação"></option>
+        <option value="Moradia"></option>
+        <option value="Transporte"></option>
+        <option value="Saúde"></option>
+        <option value="Educação"></option>
+        <option value="Lazer"></option>
+        <option value="Impostos"></option>
+        <option value="Outros"></option>
+      </datalist>
+      <select id="recorrencia">
+        <option value="nenhuma">Sem recorrência</option>
+        <option value="mensal">Mensal</option>
+      </select>
+      <input type="number" id="recorrenciaQtd" min="1" max="60" step="1" placeholder="Qtd (meses)" aria-label="Quantidade de meses de recorrência" />
+      <button type="submit">Adicionar</button>
+    </form>
+    <button id="btnLimparMes" class="danger-btn">🗑️ Limpar Mês Atual</button>
+    <button id="btnLimparDuplicatas" class="danger-btn" style="margin-top: 0.5rem;">🧹 Limpar Duplicatas do Ano</button>
+  </div>
+
+
+
+  <div class="carousel-controls">
+    <button class="carousel-btn" id="carouselPrev" title="Anterior">⟨</button>
+    <div class="carousel-indicators" id="carouselIndicators"></div>
+    <button class="carousel-btn" id="carouselNext" title="Próxima">⟩</button>
+  </div>
+  
+  <div class="carousel-wrapper" id="carouselWrapper"></div>
+  
+  <div class="totals-summary" id="totaisResumo"></div>
+
+  <!-- Month/Year Picker Modal -->
+  <div id="monthYearPicker" class="month-year-picker" role="dialog" aria-label="Selecionar mês e ano" aria-hidden="true">
+    <div class="picker-overlay"></div>
+    <div class="picker-modal">
+      <div class="picker-header">
+        <h3>Selecionar Mês e Ano</h3>
+        <button class="picker-close" aria-label="Fechar seletor">×</button>
+      </div>
+      
+      <div class="picker-content">
+        <div class="year-selector">
+          <button class="year-nav-btn" id="prevYear" aria-label="Ano anterior">←</button>
+          <span class="current-year" id="pickerCurrentYear">2025</span>
+          <button class="year-nav-btn" id="nextYear" aria-label="Próximo ano">→</button>
+        </div>
+        
+        <div class="months-grid">
+          <button class="month-option" data-month="0">Jan</button>
+          <button class="month-option" data-month="1">Fev</button>
+          <button class="month-option" data-month="2">Mar</button>
+          <button class="month-option" data-month="3">Abr</button>
+          <button class="month-option" data-month="4">Mai</button>
+          <button class="month-option" data-month="5">Jun</button>
+          <button class="month-option" data-month="6">Jul</button>
+          <button class="month-option" data-month="7">Ago</button>
+          <button class="month-option" data-month="8">Set</button>
+          <button class="month-option" data-month="9">Out</button>
+          <button class="month-option" data-month="10">Nov</button>
+          <button class="month-option" data-month="11">Dez</button>
+        </div>
+        
+        <div class="picker-actions">
+          <button class="picker-btn secondary" id="pickerCancel">Cancelar</button>
+          <button class="picker-btn primary" id="pickerConfirm">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Item Modal -->
+  <div id="editItemModal" class="edit-item-modal" role="dialog" aria-label="Editar item" aria-hidden="true">
+    <div class="edit-overlay"></div>
+    <div class="edit-modal">
+      <div class="edit-header">
+        <h3>Editar Item</h3>
+        <button class="edit-close" aria-label="Fechar editor">×</button>
+      </div>
+      
+      <div class="edit-content">
+        <form id="editItemForm">
+          <div class="edit-form-row">
+            <div class="edit-form-group">
+              <label for="editDesc">Descrição:</label>
+              <input type="text" id="editDesc" required />
+            </div>
+            <div class="edit-form-group">
+              <label for="editValor">Valor:</label>
+              <input type="number" id="editValor" min="0" step="0.01" required />
+            </div>
+          </div>
+          
+          <div class="edit-form-row">
+            <div class="edit-form-group">
+              <label for="editCategoria">Categoria:</label>
+              <input type="text" id="editCategoria" list="editCategorias" />
+              <datalist id="editCategorias">
+                <option value="Alimentação"></option>
+                <option value="Moradia"></option>
+                <option value="Transporte"></option>
+                <option value="Saúde"></option>
+                <option value="Educação"></option>
+                <option value="Lazer"></option>
+                <option value="Impostos"></option>
+                <option value="Outros"></option>
+              </datalist>
+            </div>
+            <div class="edit-form-group">
+              <label for="editStatus">Status:</label>
+              <select id="editStatus">
+                <option value="pago">Pago</option>
+                <option value="pendente">Pendente</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="edit-form-row">
+            <div class="edit-form-group">
+              <label for="editData">Data:</label>
+              <input type="date" id="editData" required />
+            </div>
+            <div class="edit-form-group">
+              <label for="editVencimento">Vencimento:</label>
+              <input type="date" id="editVencimento" />
+            </div>
+          </div>
+          
+          <div class="edit-form-row">
+            <div class="edit-form-group">
+              <label for="editRecorrencia">Recorrência:</label>
+              <select id="editRecorrencia">
+                <option value="nenhuma">Sem recorrência</option>
+                <option value="mensal">Mensal</option>
+              </select>
+              <input type="number" id="editRecorrenciaQtd" min="1" max="60" step="1" placeholder="Qtd (meses)" aria-label="Quantidade de meses de recorrência" />
+            </div>
+            <div class="edit-form-group">
+              <label for="editTipo">Tipo:</label>
+              <select id="editTipo">
+                <option value="entradas">Entrada</option>
+                <option value="saidasFixas">Saída Fixa</option>
+                <option value="saidasVariaveis">Saída Variável</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="edit-actions">
+            <button type="button" class="edit-btn secondary" id="editCancel">Cancelar</button>
+            <button type="submit" class="edit-btn primary" id="editConfirm">Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
