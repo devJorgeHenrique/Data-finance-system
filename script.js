@@ -257,28 +257,44 @@ function initEventListeners() {
   const btnLimparDuplicatas = getElement('btnLimparDuplicatas');
   if (btnLimparDuplicatas) btnLimparDuplicatas.addEventListener('click', limparDuplicatas);
   
-  // Modal de edição
+  // Modais
   const editModal = getElement('editItemModal');
   const editForm = getElement('editItemForm');
-  const editClose = document.querySelector('.edit-close');
+  const editClose = editModal ? editModal.querySelector('.edit-close') : null;
   const editCancel = getElement('editCancel');
-  
+
+  const removeModal = getElement('removeItemModal');
+  const removeClose = removeModal ? removeModal.querySelector('.edit-close') : null;
+  const removeCancel = getElement('removeCancel');
+
   if (editForm) editForm.addEventListener('submit', handleEditFormSubmission);
   if (editClose) editClose.addEventListener('click', hideEditModal);
   if (editCancel) editCancel.addEventListener('click', hideEditModal);
-  
+
+  if (removeClose) removeClose.addEventListener('click', hideRemoveModal);
+  if (removeCancel) removeCancel.addEventListener('click', hideRemoveModal);
+
   // Fechar modal ao clicar no overlay
   if (editModal) {
     const editOverlay = editModal.querySelector('.edit-overlay');
     if (editOverlay) editOverlay.addEventListener('click', hideEditModal);
   }
-  
-  // Fechar modal com tecla ESC
+  if (removeModal) {
+    const removeOverlay = removeModal.querySelector('.edit-overlay');
+    if (removeOverlay) removeOverlay.addEventListener('click', hideRemoveModal);
+  }
+
+  // Fechar modais com tecla ESC
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       const editModal = getElement('editItemModal');
       if (editModal && editModal.getAttribute('aria-hidden') === 'false') {
         hideEditModal();
+        return;
+      }
+      const removeModal = getElement('removeItemModal');
+      if (removeModal && removeModal.getAttribute('aria-hidden') === 'false') {
+        hideRemoveModal();
       }
     }
   });
@@ -299,10 +315,15 @@ function initEventListeners() {
   if (!btnLimparMes) missingElements.push('btnLimparMes');
   if (!btnLimparDuplicatas) missingElements.push('btnLimparDuplicatas');
   if (!themeToggle) missingElements.push('themeToggle');
-  
+
   // Elementos do modal de edição
   if (!getElement('editItemModal')) missingElements.push('editItemModal');
   if (!getElement('editItemForm')) missingElements.push('editItemForm');
+
+  // Elementos do modal de remoção
+  if (!getElement('removeItemModal')) missingElements.push('removeItemModal');
+  if (!getElement('removeConfirm')) missingElements.push('removeConfirm');
+  if (!getElement('removeCancel')) missingElements.push('removeCancel');
   
   if (missingElements.length > 0) {
     console.warn('Elementos não encontrados durante inicialização:', missingElements);
@@ -911,7 +932,7 @@ function renderSingleTable(tipo) {
       const btnRemover = document.createElement('button');
       btnRemover.innerHTML = '🗑️';
       btnRemover.title = 'Remover';
-      btnRemover.onclick = () => removerItem(key, tipo, originalIndices[displayIndex]);
+      btnRemover.onclick = () => showRemoveModal(() => removerItem(key, tipo, originalIndices[displayIndex]));
       
       tdAcoes.appendChild(btnEditar);
       tdAcoes.appendChild(btnRemover);
@@ -1098,11 +1119,10 @@ function removerItem(mes, tipo, index) {
   const item = currentYearData[mes][tipo][index];
   if (!item) return;
 
-  let confirmMessage = 'Deseja realmente remover este item?';
   if (item.recorrente) {
-    confirmMessage = 'Este item é recorrente. Deseja remover apenas este mês ou todos os meses futuros?';
+    const confirmMessage = 'Este item é recorrente. Deseja remover apenas este mês ou todos os meses futuros?';
     const choice = confirm(confirmMessage + '\n\nClique OK para remover apenas este mês, ou Cancel para remover todos os meses futuros.');
-    
+
     if (choice) {
       // Remove apenas este mês
       data[mes][tipo].splice(index, 1);
@@ -1157,12 +1177,8 @@ function removerItem(mes, tipo, index) {
     }
   } else {
     // ✅ CORRIGIDO: Item não recorrente, remove normalmente
-    if (confirm(confirmMessage)) {
-      currentYearData[mes][tipo].splice(index, 1);
-      toast('Item removido');
-    } else {
-      return; // Usuário cancelou
-    }
+    currentYearData[mes][tipo].splice(index, 1);
+    toast('Item removido');
   }
   
   saveData();
@@ -1435,6 +1451,34 @@ function hideEditModal() {
   editingIndex = null;
   
   console.log('Modal de edição fechado e dados limpos');
+}
+
+// Funções do Modal de Remoção
+function showRemoveModal(onConfirm) {
+  const modal = getElement('removeItemModal');
+  const confirmBtn = getElement('removeConfirm');
+  const cancelBtn = getElement('removeCancel');
+  if (!modal || !confirmBtn || !cancelBtn) {
+    console.error('Modal de remoção não encontrado');
+    return;
+  }
+
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+
+  confirmBtn.onclick = () => {
+    onConfirm();
+    hideRemoveModal();
+  };
+  cancelBtn.onclick = hideRemoveModal;
+}
+
+function hideRemoveModal() {
+  const modal = getElement('removeItemModal');
+  if (!modal) return;
+
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
 }
 
 function populateEditForm(item) {
